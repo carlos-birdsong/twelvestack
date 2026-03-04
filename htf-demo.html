@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Charlotte Housing Trust Fund — Developer Briefing</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --body: #3d3d3d;
+    --muted: #6b6b6b;
+    --border: #e2e0dc;
+    --bg: #faf9f7;
+    --card: #ffffff;
+    --accent: #b45309;
+    --accent-light: #fef3e2;
+    --accent-dark: #92400e;
+    --green: #166534;
+    --green-light: #f0fdf4;
+    --blue: #1e40af;
+    --blue-light: #eff6ff;
+    --red: #991b1b;
+    --red-light: #fef2f2;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--body);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* ---- HERO ---- */
+  .hero {
+    background: linear-gradient(168deg, #1a1a1a 0%, #2d2520 50%, #3d2b1a 100%);
+    color: #fff;
+    padding: 48px 20px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent), #d97706, var(--accent));
+  }
+  .hero-inner {
+    max-width: 680px;
+    margin: 0 auto;
+  }
+  .hero-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: #d97706;
+    margin-bottom: 16px;
+  }
+  .hero h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(28px, 6vw, 40px);
+    font-weight: 400;
+    line-height: 1.2;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+  .hero-sub {
+    font-size: 15px;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.5;
+    max-width: 520px;
+  }
+  .hero-meta {
+    margin-top: 24px;
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 0.3px;
+  }
+
+  /* ---- STAT STRIP ---- */
+  .stat-strip {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 20px;
+  }
+  .stat-strip-inner {
+    max-width: 680px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    text-align: center;
+  }
+  .stat-item {
+    padding: 8px 0;
+  }
+  .stat-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(24px, 5vw, 32px);
+    color: var(--ink);
+    line-height: 1.1;
+  }
+  .stat-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  /* ---- SECTIONS ---- */
+  section {
+    padding: 36px 0;
+  }
+  section + section {
+    border-top: 1px solid var(--border);
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(22px, 4.5vw, 28px);
+    font-weight: 400;
+    color: var(--ink);
+    line-height: 1.25;
+    margin-bottom: 16px;
+  }
+
+  p {
+    margin-bottom: 14px;
+    font-size: 15px;
+  }
+  p:last-child { margin-bottom: 0; }
+
+  /* ---- CALLOUT CARDS ---- */
+  .callout {
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+  }
+  .callout-amber {
+    background: var(--accent-light);
+    border-left: 3px solid var(--accent);
+  }
+  .callout-green {
+    background: var(--green-light);
+    border-left: 3px solid var(--green);
+  }
+  .callout-red {
+    background: var(--red-light);
+    border-left: 3px solid var(--red);
+  }
+  .callout-blue {
+    background: var(--blue-light);
+    border-left: 3px solid var(--blue);
+  }
+  .callout-title {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .callout p {
+    font-size: 14px;
+    color: var(--body);
+    margin-bottom: 0;
+  }
+
+  /* ---- DATA TABLE ---- */
+  .data-table-wrap {
+    margin: 20px 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 400px;
+  }
+  thead {
+    background: #f5f4f1;
+  }
+  th {
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #f0efec;
+    color: var(--body);
+  }
+  tr:last-child td { border-bottom: none; }
+  .td-num {
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .td-accent {
+    color: var(--accent-dark);
+    font-weight: 600;
+  }
+  .td-green {
+    color: var(--green);
+    font-weight: 600;
+  }
+
+  /* ---- RECOMMENDATIONS LIST ---- */
+  .rec-list {
+    list-style: none;
+    margin: 20px 0 0;
+  }
+  .rec-list li {
+    position: relative;
+    padding: 16px 16px 16px 52px;
+    margin-bottom: 12px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .rec-list li::before {
+    content: attr(data-num);
+    position: absolute;
+    left: 14px;
+    top: 14px;
+    width: 26px;
+    height: 26px;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .rec-title {
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  /* ---- EVICTION MINI VIZ ---- */
+  .bar-chart {
+    margin: 20px 0;
+  }
+  .bar-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    gap: 12px;
+  }
+  .bar-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    min-width: 56px;
+    text-align: right;
+  }
+  .bar-track {
+    flex: 1;
+    height: 28px;
+    background: #f0efec;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    transition: width 0.8s ease;
+  }
+  .bar-fill-amber { background: var(--accent); }
+  .bar-fill-red { background: var(--red); }
+
+  /* ---- FOOTER ---- */
+  .footer {
+    padding: 32px 20px;
+    text-align: center;
+    border-top: 1px solid var(--border);
+  }
+  .footer p {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .footer-cta {
+    display: inline-block;
+    margin-top: 16px;
+    padding: 10px 28px;
+    background: var(--ink);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 6px;
+    letter-spacing: 0.3px;
+  }
+  .footer-cta:hover {
+    background: #333;
+  }
+
+  /* ---- TRUNCATION NOTICE ---- */
+  .truncation {
+    text-align: center;
+    padding: 24px 20px;
+    color: var(--muted);
+    font-size: 13px;
+    font-style: italic;
+    background: linear-gradient(180deg, var(--bg) 0%, #f0efec 100%);
+  }
+
+  /* Subtle fade for TOC */
+  .toc {
+    margin: 20px 0;
+    padding: 16px 20px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .toc-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .toc-list {
+    list-style: none;
+    font-size: 14px;
+    color: var(--body);
+  }
+  .toc-list li {
+    padding: 4px 0;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .toc-list li span.num {
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 12px;
+    min-width: 18px;
+  }
+  .toc-list li.faded {
+    color: var(--muted);
+    opacity: 0.5;
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-label">Developer Briefing</div>
+    <h1>Charlotte Housing Trust Fund</h1>
+    <p class="hero-sub">Strategic analysis for real estate development professionals evaluating affordable housing opportunities in the Charlotte market.</p>
+    <div class="hero-meta">
+      <span>February 2026</span>
+      <span>Public Data Sources</span>
+      <span>7 Sections + Appendices</span>
+    </div>
+  </div>
+</div>
+
+<!-- STAT STRIP -->
+<div class="stat-strip">
+  <div class="stat-strip-inner">
+    <div class="stat-item">
+      <div class="stat-num">$360M</div>
+      <div class="stat-label">Bond Capital</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">9,330+</div>
+      <div class="stat-label">Units Built</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">$6.32</div>
+      <div class="stat-label">Leverage / $1</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="container">
+
+  <!-- TABLE OF CONTENTS -->
+  <section>
+    <div class="toc">
+      <div class="toc-title">Full Report Contents</div>
+      <ul class="toc-list">
+        <li><span class="num">1.</span> Executive Summary</li>
+        <li><span class="num">2.</span> Charlotte Market Context</li>
+        <li><span class="num">3.</span> Housing Trust Fund Overview</li>
+        <li><span class="num">4.</span> Available Capital Sources</li>
+        <li><span class="num">5.</span> What the City Is Looking For</li>
+        <li><span class="num">6.</span> How to Apply</li>
+        <li><span class="num">7.</span> Opportunity Analysis</li>
+        <li class="faded"><span class="num"></span> Appendices: Income Limits, Glossary, Data Sources</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- EXECUTIVE SUMMARY -->
+  <section>
+    <div class="section-label">Section 1</div>
+    <h2>Executive Summary</h2>
+    <p>Charlotte's Housing Trust Fund is one of the most developer-friendly public funding mechanisms for affordable housing in the Southeast. Established in 2001 and capitalized by voter-approved bonds every two years, the HTF has deployed over $360 million in gap financing, producing more than 9,330 completed affordable units and 888 shelter beds.</p>
+
+    <div class="callout callout-amber">
+      <div class="callout-title">$100M Housing Bond (Nov 2024)</div>
+      <p>Charlotte voters doubled the previous bond cycle. The first 13 projects were approved by City Council in April 2025, with capital actively being distributed through a twice-annual RFP cycle.</p>
+    </div>
+
+    <p>Charlotte is the 14th largest US city, the second-largest in the Southeast, and the nation's second-largest financial center. The region adds approximately 157 people per day, but housing supply has not kept pace — the city faces a 27,693-unit shortage for households at or below 30% AMI.</p>
+
+    <div class="callout callout-green">
+      <div class="callout-title">The Opportunity</div>
+      <p>Strong demographic tailwinds, severe undersupply at every income tier below 80% AMI, a well-capitalized public funding system, and a city government that actively seeks developer partners. Both for-profit and non-profit developers are eligible.</p>
+    </div>
+  </section>
+
+  <!-- MARKET SNAPSHOT -->
+  <section>
+    <div class="section-label">Section 2 — Excerpt</div>
+    <h2>The Affordability Crisis</h2>
+    <p>Median gross rent hit $1,660/month in 2023 — up 41% in real terms from $1,174 in 2013. The share of rental units below $800/month has collapsed from 45% in 2011 to just 8% in 2023, while the population has grown 23%.</p>
+
+    <div class="callout callout-red">
+      <div class="callout-title">Cost Burden</div>
+      <p>106,965 renter households are cost-burdened — 50% of all renters. Among renters earning under $20,000, the rate is 94%.</p>
+    </div>
+
+    <h2 style="margin-top: 28px;">The Eviction Signal</h2>
+    <p>Eviction filings have nearly doubled in four years — a market signal indicating massive unmet demand at lower price points.</p>
+
+    <div class="bar-chart">
+      <div class="bar-row">
+        <span class="bar-label">FY2020</span>
+        <div class="bar-track">
+          <div class="bar-fill bar-fill-amber" style="width: 51%;">23,631</div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">FY2024</span>
+        <div class="bar-track">
+          <div class="bar-fill bar-fill-red" style="width: 100%;">46,026</div>
+        </div>
+      </div>
+    </div>
+    <p style="font-size: 12px; color: var(--muted);">Eviction filings per year. Grant rate increased from 57% to 65%.</p>
+  </section>
+
+  <!-- HOUSING GAP -->
+  <section>
+    <div class="section-label">Section 2 — Demand Gap</div>
+    <h2>Where the Shortage Hits Hardest</h2>
+
+    <div class="data-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Income Level</th>
+            <th>Housing Gap</th>
+            <th>Context</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="td-accent">≤30% AMI</td>
+            <td class="td-num">27,693 units</td>
+            <td>Deepest shortage; hardest to serve</td>
+          </tr>
+          <tr>
+            <td class="td-accent">≤50% AMI</td>
+            <td class="td-num">31,900+ units</td>
+            <td>Growing need</td>
+          </tr>
+          <tr>
+            <td class="td-accent">Charlotte MSA</td>
+            <td class="td-num">45,765 units</td>
+            <td>Regional crisis</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- UNIT PRODUCTION -->
+  <section>
+    <div class="section-label">Section 3 — Fund Performance</div>
+    <h2>Where HTF Dollars Have Gone</h2>
+
+    <div class="data-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>AMI Level</th>
+            <th>Units</th>
+            <th>Share</th>
+            <th>Typical Residents</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>30% AMI</td>
+            <td class="td-num">3,690</td>
+            <td>34.0%</td>
+            <td>Pre-school teachers, home health aides</td>
+          </tr>
+          <tr>
+            <td>60% AMI</td>
+            <td class="td-num">4,766</td>
+            <td class="td-green">43.8%</td>
+            <td>Teachers, firefighters</td>
+          </tr>
+          <tr>
+            <td>80% AMI</td>
+            <td class="td-num">1,334</td>
+            <td>12.3%</td>
+            <td>Police officers, medical technicians</td>
+          </tr>
+          <tr style="background: #f9f9f7; font-weight: 600;">
+            <td style="color: var(--ink);">Total</td>
+            <td class="td-num">10,869</td>
+            <td>100%</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- OPPORTUNITY ANALYSIS -->
+  <section>
+    <div class="section-label">Section 7</div>
+    <h2>Strategic Entry Recommendations</h2>
+    <p>For an out-of-market developer evaluating Charlotte, these are the highest-leverage entry points based on fund structure, competitive dynamics, and unmet demand:</p>
+
+    <ul class="rec-list">
+      <li data-num="1">
+        <span class="rec-title">Start with a Corridors of Opportunity site.</span> These areas have city political support, potential city-owned land, and scoring advantages in both the city RFP and state QAP.
+      </li>
+      <li data-num="2">
+        <span class="rec-title">Target a mixed-income 4% LIHTC deal.</span> Less competitive than 9% credits, pairs well with HTF and CHOIF. The new 25% bond threshold makes these deals more accessible.
+      </li>
+      <li data-num="3">
+        <span class="rec-title">Partner locally.</span> A JV with an established Charlotte non-profit addresses experience requirements and brings local relationships.
+      </li>
+      <li data-num="4">
+        <span class="rec-title">Layer CHOIF early.</span> The one-stop-shop RFP gives access to both HTF and CHOIF simultaneously. Requirements already align.
+      </li>
+      <li data-num="5">
+        <span class="rec-title">Pursue project-based vouchers.</span> PBVs from CHA make 30% AMI units viable. CHA's decade-long waitlist means immediate occupancy.
+      </li>
+    </ul>
+  </section>
+
+</div>
+
+<!-- TRUNCATION / CTA -->
+<div class="truncation">
+  This is an excerpt. The full briefing includes capital stacking models, application process details,<br>scoring criteria, contact information, and reference appendices.
+</div>
+
+<div class="footer">
+  <p>Based on public documents from the City of Charlotte, Mecklenburg County, and state/federal agencies.</p>
+  <a href="twelvestack.com" class="footer-cta">Request Full Report</a>
+</div>
+
+</body>
+</html>
