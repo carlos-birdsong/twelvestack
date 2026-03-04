@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jordan Wells — LinkedIn Network Strategy Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:#f0f4f8; color:#1a202c; }
+
+/* Header */
+.header { background:linear-gradient(135deg,#134e4a 0%,#0f766e 100%); color:white; padding:20px 30px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:1000; box-shadow:0 2px 12px rgba(0,0,0,0.3); }
+.header h1 { font-size:22px; font-weight:700; }
+.header .subtitle { font-size:13px; color:#99f6e4; margin-top:3px; }
+.header-right { text-align:right; font-size:12px; color:#99f6e4; }
+.header-right a { color:#5eead4; text-decoration:none; }
+.sample-badge { display:inline-block; background:#ef4444; color:white; font-size:10px; font-weight:700; padding:2px 8px; border-radius:4px; margin-left:10px; vertical-align:middle; letter-spacing:.5px; }
+
+/* Tabs */
+.tab-bar { background:#0d3330; display:flex; padding:0 20px; overflow-x:auto; }
+.tab-btn { padding:14px 20px; color:#99f6e4; cursor:pointer; font-size:14px; font-weight:500; border:none; background:none; white-space:nowrap; border-bottom:3px solid transparent; transition:all 0.2s; }
+.tab-btn:hover { color:white; }
+.tab-btn.active { color:white; border-bottom-color:#2dd4bf; }
+
+/* Main */
+.main { max-width:1400px; margin:0 auto; padding:20px; }
+.tab-content { display:none; }
+.tab-content.active { display:block; }
+
+/* Cards */
+.card { background:white; border-radius:12px; padding:24px; margin-bottom:20px; box-shadow:0 1px 4px rgba(0,0,0,0.08); }
+.card h2 { font-size:18px; margin-bottom:16px; color:#134e4a; border-bottom:2px solid #ccfbf1; padding-bottom:8px; }
+.card h3 { font-size:15px; margin-bottom:10px; color:#0f766e; }
+
+/* Stats */
+.stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:24px; }
+.stat-card { background:white; border-radius:12px; padding:22px; box-shadow:0 1px 4px rgba(0,0,0,0.08); text-align:center; border-top:4px solid #0d9488; }
+.stat-card.green { border-top-color:#16a34a; }
+.stat-card.blue { border-top-color:#0284c7; }
+.stat-card.amber { border-top-color:#d97706; }
+.stat-card.purple { border-top-color:#7c3aed; }
+.stat-card .stat-value { font-size:36px; font-weight:800; color:#134e4a; }
+.stat-card .stat-label { font-size:12px; color:#64748b; margin-top:4px; text-transform:uppercase; letter-spacing:.5px; }
+
+/* Charts */
+.charts-row { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px; }
+@media(max-width:900px){ .charts-row { grid-template-columns:1fr; } }
+.chart-container { position:relative; height:300px; }
+
+/* Badges */
+.badge { display:inline-block; padding:3px 9px; border-radius:12px; font-size:11px; font-weight:600; margin:2px 3px 2px 0; white-space:nowrap; }
+.badge-climate  { background:#dcfce7; color:#166534; }
+.badge-env      { background:#cffafe; color:#155e75; }
+.badge-intl     { background:#ede9fe; color:#5b21b6; }
+.badge-gov      { background:#f1f5f9; color:#475569; }
+.badge-nonprofit{ background:#fef3c7; color:#92400e; }
+.badge-fishrich { background:#1e3a8a; color:white; }
+.badge-otherip  { background:#e2e8f0; color:#334155; }
+.badge-tech     { background:#1e293b; color:white; }
+.badge-recruiter{ background:#f8fafc; color:#94a3b8; border:1px solid #e2e8f0; }
+.badge-clean_energy { background:#dcfce7; color:#166534; }
+.badge-env_law  { background:#cffafe; color:#155e75; }
+.badge-nonprofit { background:#fef3c7; color:#92400e; }
+.badge-intl     { background:#ede9fe; color:#5b21b6; }
+.badge-tech_inhouse { background:#1e293b; color:white; }
+.badge-ip_stay  { background:#e2e8f0; color:#334155; }
+.badge-other    { background:#f1f5f9; color:#64748b; }
+
+.score-badge { padding:2px 8px; border-radius:8px; font-size:11px; font-weight:700; }
+.score-high { background:#dcfce7; color:#166534; }
+.score-med  { background:#fef3c7; color:#92400e; }
+.score-low  { background:#fee2e2; color:#991b1b; }
+
+/* Connection grid */
+.conn-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px; }
+.conn-card { background:white; border:1px solid #e2e8f0; border-radius:10px; padding:16px; transition:box-shadow 0.2s; }
+.conn-card:hover { box-shadow:0 4px 12px rgba(0,0,0,0.1); }
+.cc-name { font-size:15px; font-weight:700; color:#1a202c; margin-bottom:2px; }
+.cc-name a { color:#1a202c; text-decoration:none; }
+.cc-name a:hover { color:#0f766e; }
+.cc-sub { font-size:12px; color:#475569; }
+.cc-company { font-size:12px; color:#64748b; margin-bottom:6px; }
+.cc-badges { margin-top:6px; }
+
+/* Key people */
+.key-card { background:white; border:2px solid #0d9488; border-radius:14px; padding:24px; margin-bottom:18px; }
+.kc-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; flex-wrap:wrap; gap:10px; }
+.kc-name { font-size:20px; font-weight:700; color:#134e4a; }
+.kc-name a { color:#134e4a; text-decoration:none; }
+.kc-org { font-size:13px; font-weight:600; color:#0f766e; margin-top:2px; }
+.kc-headline { font-size:13px; color:#475569; margin-top:2px; }
+.kc-why { font-size:14px; color:#334155; line-height:1.6; margin:12px 0; padding:12px; background:#f0fdf4; border-left:4px solid #16a34a; border-radius:4px; }
+.kc-actions h4 { font-size:13px; font-weight:700; color:#134e4a; margin-bottom:6px; }
+.kc-actions ul { margin-left:18px; font-size:13px; color:#475569; }
+.kc-actions li { margin-bottom:4px; line-height:1.5; }
+
+/* Job cards */
+.jobs-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:14px; }
+.job-card { background:white; border:1px solid #e2e8f0; border-left:4px solid #0d9488; border-radius:8px; padding:16px; }
+.jc-company { font-size:12px; font-weight:700; color:#0f766e; text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px; }
+.jc-title { font-size:14px; font-weight:600; color:#1a202c; margin-bottom:6px; }
+.jc-why { font-size:12px; color:#64748b; line-height:1.5; }
+
+/* Table */
+.table-container { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { background:#134e4a; color:white; padding:10px 12px; text-align:left; font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.5px; }
+td { padding:10px 12px; border-bottom:1px solid #f1f5f9; }
+tr:hover td { background:#f0fdf4; }
+
+/* Pivot story */
+.pivot-story { background:linear-gradient(135deg,#f0fdf4,#ecfdf5); border:1px solid #bbf7d0; border-radius:12px; padding:24px; margin-bottom:20px; }
+.pivot-story h3 { color:#134e4a; font-size:16px; margin-bottom:12px; }
+.pivot-story p { color:#374151; font-size:14px; line-height:1.7; margin-bottom:10px; }
+.pivot-story .strength { display:inline-block; background:#134e4a; color:white; padding:3px 10px; border-radius:12px; font-size:12px; font-weight:600; margin:2px; }
+
+/* Search/filter */
+.search-row { display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
+.search-input { flex:1; min-width:200px; padding:10px 14px; border:1px solid #e2e8f0; border-radius:8px; font-size:14px; outline:none; }
+.search-input:focus { border-color:#0d9488; box-shadow:0 0 0 3px rgba(13,148,136,0.1); }
+.filter-btn { padding:8px 16px; border:1px solid #e2e8f0; border-radius:8px; cursor:pointer; font-size:13px; background:white; transition:all 0.15s; }
+.filter-btn:hover, .filter-btn.active { background:#134e4a; color:white; border-color:#134e4a; }
+
+/* Section intro */
+.section-intro { font-size:14px; color:#64748b; margin-bottom:16px; line-height:1.6; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>Jordan Wells — LinkedIn Network Strategy Dashboard <span class="sample-badge">SAMPLE</span></h1>
+    <div class="subtitle">Career Transition: IP Law &rarr; Climate / Environmental / Sustainable Development Law</div>
+  </div>
+  <div class="header-right">
+    <div>Generated March 2026</div>
+    <div style="margin-top:4px;font-size:11px;color:#5eead4;">312 connections analyzed</div>
+  </div>
+</div>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="showTab('overview')">Overview</button>
+  <button class="tab-btn" onclick="showTab('pivot')">Mission-Aligned Network</button>
+  <button class="tab-btn" onclick="showTab('keypeople')">Key Connectors</button>
+  <button class="tab-btn" onclick="showTab('jobs')">Job Search Intel</button>
+  <button class="tab-btn" onclick="showTab('allconn')">Full Network</button>
+</div>
+
+<div class="main">
+
+<!-- ===== OVERVIEW ===== -->
+<div id="tab-overview" class="tab-content active">
+
+  <div class="pivot-story">
+    <h3>The Pivot Narrative</h3>
+    <p>Jordan Wells is an experienced patent attorney at Whitfield &amp; Associates with a rare combination of credentials that make them a strong candidate for mission-driven legal roles in climate, environmental, and sustainable development law. Before patent prosecution, Jordan spent six years as a legal consultant at <strong>WIPO (World Intellectual Property Organization)</strong> in Geneva, advising on technology transfer frameworks, IP policy for developing nations, and clean energy patent licensing. Jordan also holds an MS in Environmental Engineering from MIT and actively volunteers with the <strong>Climate Justice Alliance</strong> (environmental law), <strong>IRAP</strong> (refugee rights), and the <strong>Sierra Club Legal</strong> program.</p>
+    <p>Jordan's current job search reveals a clear pattern: applications to clean energy companies (Solaris Energy, Pacific Renewables), bookmarked roles at the Clearwater Foundation and UNDP climate division, and saved positions at environmental advocacy organizations. The IP-to-mission transition is already underway. The goal is to use this 312-person network to accelerate it.</p>
+    <div style="margin-top:12px;">
+      <span class="strength">WIPO / International IP Policy</span>
+      <span class="strength">Environmental Engineering (MIT)</span>
+      <span class="strength">Volunteer: Climate Justice</span>
+      <span class="strength">Georgetown University JD</span>
+      <span class="strength">Patent Examiner (USPTO)</span>
+      <span class="strength">Clean Energy IP Expertise</span>
+      <span class="strength">6 yrs BigLaw</span>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value">312</div>
+      <div class="stat-label">Total Connections</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-value">68</div>
+      <div class="stat-label">Mission-Aligned Connections</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-value">42</div>
+      <div class="stat-label">High-Value Pivot Contacts</div>
+    </div>
+    <div class="stat-card amber">
+      <div class="stat-value">12</div>
+      <div class="stat-label">Job Applications</div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-value">12</div>
+      <div class="stat-label">Saved Jobs</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">10</div>
+      <div class="stat-label">Whitfield &amp; Associates Contacts</div>
+    </div>
+  </div>
+
+  <div class="charts-row">
+    <div class="card">
+      <h2>Network by Sector</h2>
+      <div class="chart-container">
+        <canvas id="sectorChart"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Top Mission-Aligned Connection Groups</h2>
+      <div class="chart-container">
+        <canvas id="pivotChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Career Timeline</h2>
+    <div style="position:relative;padding-left:24px;">
+      <div style="position:absolute;left:8px;top:0;bottom:0;width:2px;background:#ccfbf1;"></div>
+
+      <div style="position:relative;margin-bottom:18px;">
+        <div style="position:absolute;left:-20px;top:4px;width:12px;height:12px;border-radius:50%;background:#0d9488;border:2px solid white;box-shadow:0 0 0 2px #0d9488;"></div>
+        <div style="font-size:13px;font-weight:700;color:#134e4a;">Patent Attorney</div>
+        <div style="font-size:12px;color:#0f766e;font-weight:600;">Whitfield &amp; Associates</div>
+        <div style="font-size:12px;color:#64748b;">Jun 2022 &mdash; Present</div>
+        <div style="font-size:12px;color:#475569;margin-top:4px;line-height:1.5;">Patent prosecution and post-grant proceedings in clean energy, semiconductors, and biotech.</div>
+      </div>
+      <div style="position:relative;margin-bottom:18px;">
+        <div style="position:absolute;left:-20px;top:4px;width:12px;height:12px;border-radius:50%;background:#0d9488;border:2px solid white;box-shadow:0 0 0 2px #0d9488;"></div>
+        <div style="font-size:13px;font-weight:700;color:#134e4a;">IP Associate</div>
+        <div style="font-size:12px;color:#0f766e;font-weight:600;">Sterling Knox LLP</div>
+        <div style="font-size:12px;color:#64748b;">Jan 2019 &mdash; May 2022</div>
+        <div style="font-size:12px;color:#475569;margin-top:4px;line-height:1.5;">Advised clients on patent prosecution, freedom-to-operate, and IP portfolio strategy across telecom and automotive technologies.</div>
+      </div>
+      <div style="position:relative;margin-bottom:18px;">
+        <div style="position:absolute;left:-20px;top:4px;width:12px;height:12px;border-radius:50%;background:#0d9488;border:2px solid white;box-shadow:0 0 0 2px #0d9488;"></div>
+        <div style="font-size:13px;font-weight:700;color:#134e4a;">Patent Attorney</div>
+        <div style="font-size:12px;color:#0f766e;font-weight:600;">Chambers &amp; Blake</div>
+        <div style="font-size:12px;color:#64748b;">Jul 2018 &mdash; Jan 2019</div>
+        <div style="font-size:12px;color:#475569;margin-top:4px;line-height:1.5;">Patent prosecution in energy storage and renewable systems.</div>
+      </div>
+      <div style="position:relative;margin-bottom:18px;">
+        <div style="position:absolute;left:-20px;top:4px;width:12px;height:12px;border-radius:50%;background:#0d9488;border:2px solid white;box-shadow:0 0 0 2px #0d9488;"></div>
+        <div style="font-size:13px;font-weight:700;color:#134e4a;">Patent Examiner</div>
+        <div style="font-size:12px;color:#0f766e;font-weight:600;">U.S. Patent &amp; Trademark Office</div>
+        <div style="font-size:12px;color:#64748b;">May 2012 &mdash; Jul 2018</div>
+        <div style="font-size:12px;color:#475569;margin-top:4px;line-height:1.5;">Examined patent applications in renewable energy, environmental monitoring, and sensor technologies.</div>
+      </div>
+      <div style="position:relative;margin-bottom:18px;">
+        <div style="position:absolute;left:-20px;top:4px;width:12px;height:12px;border-radius:50%;background:#0d9488;border:2px solid white;box-shadow:0 0 0 2px #0d9488;"></div>
+        <div style="font-size:13px;font-weight:700;color:#134e4a;">Legal Consultant</div>
+        <div style="font-size:12px;color:#0f766e;font-weight:600;">WIPO (World Intellectual Property Organization)</div>
+        <div style="font-size:12px;color:#64748b;">Jun 2006 &mdash; Apr 2012</div>
+        <div style="font-size:12px;color:#475569;margin-top:4px;line-height:1.5;">Advised on technology transfer frameworks, IP policy for developing nations, and clean energy patent licensing under international treaties.</div>
+      </div>
+      <div style="position:relative;margin-bottom:18px;">
+        <div style="position:absolute;left:-20px;top:4px;width:12px;height:12px;border-radius:50%;background:#0d9488;border:2px solid white;box-shadow:0 0 0 2px #0d9488;"></div>
+        <div style="font-size:13px;font-weight:700;color:#134e4a;">Research Engineer</div>
+        <div style="font-size:12px;color:#0f766e;font-weight:600;">MIT Energy Initiative</div>
+        <div style="font-size:12px;color:#64748b;">Sep 2004 &mdash; May 2006</div>
+        <div style="font-size:12px;color:#475569;margin-top:4px;line-height:1.5;">Conducted research on carbon capture technologies and environmental remediation systems.</div>
+      </div>
+      <div style="position:relative;margin-bottom:18px;">
+        <div style="position:absolute;left:-20px;top:4px;width:12px;height:12px;border-radius:50%;background:#0d9488;border:2px solid white;box-shadow:0 0 0 2px #0d9488;"></div>
+        <div style="font-size:13px;font-weight:700;color:#134e4a;">Associate Attorney</div>
+        <div style="font-size:12px;color:#0f766e;font-weight:600;">Hartwell Morgan LLP</div>
+        <div style="font-size:12px;color:#64748b;">Sep 2002 &mdash; Aug 2004</div>
+        <div style="font-size:12px;color:#475569;margin-top:4px;line-height:1.5;">General litigation and regulatory compliance for energy and infrastructure clients.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Volunteer Work (Mission Evidence)</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;">
+
+      <div style="background:#f0fdf4;border-radius:10px;padding:16px;border-left:4px solid #16a34a;">
+        <div style="font-size:14px;font-weight:700;color:#134e4a;">Climate Justice Alliance</div>
+        <div style="font-size:13px;color:#0f766e;">Volunteer Legal Counsel</div>
+        <div style="font-size:12px;color:#64748b;margin-top:4px;">Cause: environment</div>
+      </div>
+      <div style="background:#f0fdf4;border-radius:10px;padding:16px;border-left:4px solid #16a34a;">
+        <div style="font-size:14px;font-weight:700;color:#134e4a;">International Refugee Assistance Project (IRAP)</div>
+        <div style="font-size:13px;color:#0f766e;">Legal Counsel</div>
+        <div style="font-size:12px;color:#64748b;margin-top:4px;">Cause: human rights</div>
+      </div>
+      <div style="background:#f0fdf4;border-radius:10px;padding:16px;border-left:4px solid #16a34a;">
+        <div style="font-size:14px;font-weight:700;color:#134e4a;">Sierra Club Legal Program</div>
+        <div style="font-size:13px;color:#0f766e;">Pro Bono Attorney</div>
+        <div style="font-size:12px;color:#64748b;margin-top:4px;">Cause: environment</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== MISSION-ALIGNED NETWORK ===== -->
+<div id="tab-pivot" class="tab-content">
+  <div class="card">
+    <h2>Mission-Aligned Connections (42 contacts scoring &ge; 4/10)</h2>
+    <p class="section-intro">These connections work at organizations aligned with Jordan's pivot toward climate, environmental, sustainable development, government/policy, and nonprofit law. Scored by sector match, organization tier, and seniority. Use the filter buttons to focus on specific sectors.</p>
+    <div class="search-row">
+      <input type="text" class="search-input" id="pivotSearch" placeholder="Search by name, company, or position..." oninput="filterPivotCards()">
+      <button class="filter-btn active" onclick="setPivotFilter('all', this)">All</button>
+      <button class="filter-btn" onclick="setPivotFilter('climate', this)">Climate & Energy</button>
+      <button class="filter-btn" onclick="setPivotFilter('env', this)">Env & Social</button>
+      <button class="filter-btn" onclick="setPivotFilter('intl', this)">International</button>
+      <button class="filter-btn" onclick="setPivotFilter('gov', this)">Gov / Policy</button>
+      <button class="filter-btn" onclick="setPivotFilter('nonprofit', this)">Nonprofit</button>
+    </div>
+    <div class="conn-grid" id="pivotGrid">
+
+<div class="conn-card" data-sectors="env_social government_policy nonprofit_found" data-text="rachel torres climate justice alliance supervising attorney, environmental litigation">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Rachel Torres</a> <span class="score-badge score-high">10/10</span></div>
+    <div class="cc-sub">Supervising Attorney, Environmental Litigation</div>
+    <div class="cc-company">Climate Justice Alliance</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-env">Environmental & Social</span><span class="badge badge-gov">Government/Policy</span><span class="badge badge-nonprofit">Nonprofit</span></div>
+</div>
+<div class="conn-card" data-sectors="env_social intl_dev" data-text="marcus chen world trade organization senior legal advisor, environmental goods">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Marcus Chen</a> <span class="score-badge score-high">10/10</span></div>
+    <div class="cc-sub">Senior Legal Advisor, Environmental Goods</div>
+    <div class="cc-company">World Trade Organization</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-env">Environmental & Social</span><span class="badge badge-intl">International</span></div>
+</div>
+<div class="conn-card" data-sectors="intl_dev nonprofit_found" data-text="dr. amara osei wipo director, technology transfer division">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Dr. Amara Osei</a> <span class="score-badge score-high">10/10</span></div>
+    <div class="cc-sub">Director, Technology Transfer Division</div>
+    <div class="cc-company">WIPO</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-intl">International</span><span class="badge badge-nonprofit">Nonprofit</span></div>
+</div>
+<div class="conn-card" data-sectors="climate_energy intl_dev" data-text="fatima al-rashidi undp green economy programme officer">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Fatima Al-Rashidi</a> <span class="score-badge score-high">10/10</span></div>
+    <div class="cc-sub">Green Economy Programme Officer</div>
+    <div class="cc-company">UNDP</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-climate">Climate & Energy</span><span class="badge badge-intl">International</span></div>
+</div>
+<div class="conn-card" data-sectors="env_social government_policy" data-text="david okonkwo u.s. department of justice environmental crimes section chief">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">David Okonkwo</a> <span class="score-badge score-high">10/10</span></div>
+    <div class="cc-sub">Environmental Crimes Section Chief</div>
+    <div class="cc-company">U.S. Department of Justice</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-env">Environmental & Social</span><span class="badge badge-gov">Government/Policy</span></div>
+</div>
+<div class="conn-card" data-sectors="government_policy climate_energy" data-text="priya nair us environmental protection agency director, international climate policy">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Priya Nair</a> <span class="score-badge score-high">10/10</span></div>
+    <div class="cc-sub">Director, International Climate Policy</div>
+    <div class="cc-company">US Environmental Protection Agency (EPA)</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-gov">Government/Policy</span><span class="badge badge-climate">Climate & Energy</span></div>
+</div>
+<div class="conn-card" data-sectors="climate_energy nonprofit_found" data-text="sarah lindberg clearwater foundation vp, climate programs">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Sarah Lindberg</a> <span class="score-badge score-high">10/10</span></div>
+    <div class="cc-sub">VP, Climate Programs</div>
+    <div class="cc-company">Clearwater Foundation</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-climate">Climate & Energy</span><span class="badge badge-nonprofit">Nonprofit</span></div>
+</div>
+<div class="conn-card" data-sectors="env_social intl_dev" data-text="dr. kwame mensah greenleaf legal foundation senior fellow, environmental governance">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Dr. Kwame Mensah</a> <span class="score-badge score-high">10/10</span></div>
+    <div class="cc-sub">Senior Fellow, Environmental Governance</div>
+    <div class="cc-company">Greenleaf Legal Foundation</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-env">Environmental & Social</span><span class="badge badge-intl">International</span></div>
+</div>
+<div class="conn-card" data-sectors="government_policy nonprofit_found" data-text="elena vasquez alliance for climate action policy program director">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Elena Vasquez</a> <span class="score-badge score-high">9/10</span></div>
+    <div class="cc-sub">Policy Program Director</div>
+    <div class="cc-company">Alliance for Climate Action</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-gov">Government/Policy</span><span class="badge badge-nonprofit">Nonprofit</span></div>
+</div>
+<div class="conn-card" data-sectors="climate_energy nonprofit_found" data-text="james whitaker the horizon initiative climate tech program director">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">James Whitaker</a> <span class="score-badge score-high">9/10</span></div>
+    <div class="cc-sub">Climate Tech Program Director</div>
+    <div class="cc-company">The Horizon Initiative</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-climate">Climate & Energy</span><span class="badge badge-nonprofit">Nonprofit</span></div>
+</div>
+<div class="conn-card" data-sectors="intl_dev" data-text="nadia petrova international finance corporation senior counsel, climate finance">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Nadia Petrova</a> <span class="score-badge score-high">9/10</span></div>
+    <div class="cc-sub">Senior Counsel, Climate Finance</div>
+    <div class="cc-company">International Finance Corporation</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-intl">International</span></div>
+</div>
+<div class="conn-card" data-sectors="government_policy" data-text="terrence banks u.s. department of energy deputy general counsel, energy policy">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Terrence Banks</a> <span class="score-badge score-high">9/10</span></div>
+    <div class="cc-sub">Deputy General Counsel, Energy Policy</div>
+    <div class="cc-company">U.S. Department of Energy</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-gov">Government/Policy</span></div>
+</div>
+<div class="conn-card" data-sectors="government_policy" data-text="christine halverson u.s. department of state senior advisor, climate diplomacy">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Christine Halverson</a> <span class="score-badge score-high">9/10</span></div>
+    <div class="cc-sub">Senior Advisor, Climate Diplomacy</div>
+    <div class="cc-company">U.S. Department of State</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-gov">Government/Policy</span></div>
+</div>
+<div class="conn-card" data-sectors="intl_dev" data-text="samuel adeyemi world bank group environment and social standards adviser">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Samuel Adeyemi</a> <span class="score-badge score-high">9/10</span></div>
+    <div class="cc-sub">Environment and Social Standards Adviser</div>
+    <div class="cc-company">World Bank Group</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-intl">International</span></div>
+</div>
+<div class="conn-card" data-sectors="government_policy" data-text="michelle dawson noaa senior policy analyst, ocean and coastal management">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Michelle Dawson</a> <span class="score-badge score-high">9/10</span></div>
+    <div class="cc-sub">Senior Policy Analyst, Ocean and Coastal Management</div>
+    <div class="cc-company">NOAA</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-gov">Government/Policy</span></div>
+</div>
+<div class="conn-card" data-sectors="nonprofit_found" data-text="adrienne cole greenbridge alliance director of legal programs">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Adrienne Cole</a> <span class="score-badge score-high">9/10</span></div>
+    <div class="cc-sub">Director of Legal Programs</div>
+    <div class="cc-company">Greenbridge Alliance</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-nonprofit">Nonprofit</span></div>
+</div>
+<div class="conn-card" data-sectors="intl_dev nonprofit_found" data-text="omar hassan un environment programme legal officer, environmental treaties">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Omar Hassan</a> <span class="score-badge score-high">9/10</span></div>
+    <div class="cc-sub">Legal Officer, Environmental Treaties</div>
+    <div class="cc-company">UN Environment Programme</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-intl">International</span><span class="badge badge-nonprofit">Nonprofit</span></div>
+</div>
+<div class="conn-card" data-sectors="env_social nonprofit_found" data-text="lisa pemberton earth advocates coalition managing attorney">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Lisa Pemberton</a> <span class="score-badge score-high">8/10</span></div>
+    <div class="cc-sub">Managing Attorney</div>
+    <div class="cc-company">Earth Advocates Coalition</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-env">Environmental & Social</span><span class="badge badge-nonprofit">Nonprofit</span></div>
+</div>
+<div class="conn-card" data-sectors="climate_energy" data-text="robert tanaka solaris energy corp general counsel">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Robert Tanaka</a> <span class="score-badge score-high">8/10</span></div>
+    <div class="cc-sub">General Counsel</div>
+    <div class="cc-company">Solaris Energy Corp</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-climate">Climate & Energy</span></div>
+</div>
+<div class="conn-card" data-sectors="government_policy nonprofit_found" data-text="denise washington urban resilience institute executive director">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Denise Washington</a> <span class="score-badge score-high">8/10</span></div>
+    <div class="cc-sub">Executive Director</div>
+    <div class="cc-company">Urban Resilience Institute</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-gov">Government/Policy</span><span class="badge badge-nonprofit">Nonprofit</span></div>
+</div>
+<div class="conn-card" data-sectors="intl_dev nonprofit_found" data-text="kathryn nguyen center for international environmental law senior attorney">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Kathryn Nguyen</a> <span class="score-badge score-high">8/10</span></div>
+    <div class="cc-sub">Senior Attorney</div>
+    <div class="cc-company">Center for International Environmental Law</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-intl">International</span><span class="badge badge-nonprofit">Nonprofit</span></div>
+</div>
+<div class="conn-card" data-sectors="env_social government_policy" data-text="raymond foster u.s. department of the interior deputy solicitor, land and water resources">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Raymond Foster</a> <span class="score-badge score-high">8/10</span></div>
+    <div class="cc-sub">Deputy Solicitor, Land and Water Resources</div>
+    <div class="cc-company">U.S. Department of the Interior</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-env">Environmental & Social</span><span class="badge badge-gov">Government/Policy</span></div>
+</div>
+<div class="conn-card" data-sectors="intl_dev" data-text="yuki tanabe wipo counsellor, global challenges and partnerships">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Yuki Tanabe</a> <span class="score-badge score-high">8/10</span></div>
+    <div class="cc-sub">Counsellor, Global Challenges and Partnerships</div>
+    <div class="cc-company">WIPO</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-intl">International</span></div>
+</div>
+<div class="conn-card" data-sectors="government_policy" data-text="angela morrison u.s. department of commerce senior counsel, technology policy">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Angela Morrison</a> <span class="score-badge score-high">8/10</span></div>
+    <div class="cc-sub">Senior Counsel, Technology Policy</div>
+    <div class="cc-company">U.S. Department of Commerce</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-gov">Government/Policy</span></div>
+</div>
+<div class="conn-card" data-sectors="nonprofit_found" data-text="daniel reeves national conservation trust vice president, legal affairs">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Daniel Reeves</a> <span class="score-badge score-high">8/10</span></div>
+    <div class="cc-sub">Vice President, Legal Affairs</div>
+    <div class="cc-company">National Conservation Trust</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-nonprofit">Nonprofit</span></div>
+</div>
+<div class="conn-card" data-sectors="env_social intl_dev" data-text="ingrid solheim nordic development fund senior advisor, climate and environment">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Ingrid Solheim</a> <span class="score-badge score-high">7/10</span></div>
+    <div class="cc-sub">Senior Advisor, Climate and Environment</div>
+    <div class="cc-company">Nordic Development Fund</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-env">Environmental & Social</span><span class="badge badge-intl">International</span></div>
+</div>
+<div class="conn-card" data-sectors="government_policy" data-text="jerome williams federal energy regulatory commission attorney advisor">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Jerome Williams</a> <span class="score-badge score-high">7/10</span></div>
+    <div class="cc-sub">Attorney Advisor</div>
+    <div class="cc-company">Federal Energy Regulatory Commission</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-gov">Government/Policy</span></div>
+</div>
+<div class="conn-card" data-sectors="nonprofit_found" data-text="maria santos clean air task force associate general counsel">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Maria Santos</a> <span class="score-badge score-high">7/10</span></div>
+    <div class="cc-sub">Associate General Counsel</div>
+    <div class="cc-company">Clean Air Task Force</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-nonprofit">Nonprofit</span></div>
+</div>
+<div class="conn-card" data-sectors="intl_dev" data-text="benjamin cole asian development bank senior counsel, environment and safeguards">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Benjamin Cole</a> <span class="score-badge score-high">7/10</span></div>
+    <div class="cc-sub">Senior Counsel, Environment and Safeguards</div>
+    <div class="cc-company">Asian Development Bank</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-intl">International</span></div>
+</div>
+<div class="conn-card" data-sectors="government_policy nonprofit_found" data-text="patricia lane brookings institution fellow, energy and climate">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Patricia Lane</a> <span class="score-badge score-high">7/10</span></div>
+    <div class="cc-sub">Fellow, Energy and Climate</div>
+    <div class="cc-company">Brookings Institution</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-gov">Government/Policy</span><span class="badge badge-nonprofit">Nonprofit</span></div>
+</div>
+<div class="conn-card" data-sectors="env_social" data-text="diana kemp riverstone environmental trust staff attorney">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Diana Kemp</a> <span class="score-badge score-high">7/10</span></div>
+    <div class="cc-sub">Staff Attorney</div>
+    <div class="cc-company">Riverstone Environmental Trust</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-env">Environmental & Social</span></div>
+</div>
+<div class="conn-card" data-sectors="government_policy" data-text="george nakamura u.s. department of energy program manager, clean energy technologies">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">George Nakamura</a> <span class="score-badge score-med">6/10</span></div>
+    <div class="cc-sub">Program Manager, Clean Energy Technologies</div>
+    <div class="cc-company">U.S. Department of Energy</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-gov">Government/Policy</span></div>
+</div>
+<div class="conn-card" data-sectors="nonprofit_found" data-text="vanessa price natural resources defense council legal fellow">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Vanessa Price</a> <span class="score-badge score-med">6/10</span></div>
+    <div class="cc-sub">Legal Fellow</div>
+    <div class="cc-company">Natural Resources Defense Council</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-nonprofit">Nonprofit</span></div>
+</div>
+<div class="conn-card" data-sectors="intl_dev" data-text="carlos mendez inter-american development bank environmental specialist">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Carlos Mendez</a> <span class="score-badge score-med">6/10</span></div>
+    <div class="cc-sub">Environmental Specialist</div>
+    <div class="cc-company">Inter-American Development Bank</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-intl">International</span></div>
+</div>
+<div class="conn-card" data-sectors="government_policy" data-text="alicia freeman department of housing and urban development senior program specialist">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Alicia Freeman</a> <span class="score-badge score-med">6/10</span></div>
+    <div class="cc-sub">Senior Program Specialist</div>
+    <div class="cc-company">Department of Housing and Urban Development</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-gov">Government/Policy</span></div>
+</div>
+<div class="conn-card" data-sectors="env_social nonprofit_found" data-text="stephanie grant oceana staff attorney, u.s. oceans">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Stephanie Grant</a> <span class="score-badge score-med">6/10</span></div>
+    <div class="cc-sub">Staff Attorney, U.S. Oceans</div>
+    <div class="cc-company">Oceana</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-env">Environmental & Social</span><span class="badge badge-nonprofit">Nonprofit</span></div>
+</div>
+<div class="conn-card" data-sectors="government_policy" data-text="ronald baker tennessee department of environment and conservation deputy commissioner">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Ronald Baker</a> <span class="score-badge score-med">5/10</span></div>
+    <div class="cc-sub">Deputy Commissioner</div>
+    <div class="cc-company">Tennessee Department of Environment and Conservation</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-gov">Government/Policy</span></div>
+</div>
+<div class="conn-card" data-sectors="nonprofit_found" data-text="tanya brooks ford foundation program officer, natural resources">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Tanya Brooks</a> <span class="score-badge score-med">5/10</span></div>
+    <div class="cc-sub">Program Officer, Natural Resources</div>
+    <div class="cc-company">Ford Foundation</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-nonprofit">Nonprofit</span></div>
+</div>
+<div class="conn-card" data-sectors="intl_dev" data-text="henrik johansson global green growth institute legal advisor">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Henrik Johansson</a> <span class="score-badge score-med">5/10</span></div>
+    <div class="cc-sub">Legal Advisor</div>
+    <div class="cc-company">Global Green Growth Institute</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-intl">International</span></div>
+</div>
+<div class="conn-card" data-sectors="government_policy" data-text="carol whitfield district of columbia department of energy and environment senior counsel">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Carol Whitfield</a> <span class="score-badge score-med">5/10</span></div>
+    <div class="cc-sub">Senior Counsel</div>
+    <div class="cc-company">District of Columbia Department of Energy and Environment</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-gov">Government/Policy</span></div>
+</div>
+<div class="conn-card" data-sectors="env_social" data-text="michael ashford center for biological diversity staff attorney">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Michael Ashford</a> <span class="score-badge score-med">4/10</span></div>
+    <div class="cc-sub">Staff Attorney</div>
+    <div class="cc-company">Center for Biological Diversity</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-env">Environmental & Social</span></div>
+</div>
+<div class="conn-card" data-sectors="nonprofit_found" data-text="laura jenkins pacific institute director of operations">
+  <div class="cc-top">
+    <div class="cc-name"><a href="#">Laura Jenkins</a> <span class="score-badge score-med">4/10</span></div>
+    <div class="cc-sub">Director of Operations</div>
+    <div class="cc-company">Pacific Institute</div>
+  </div>
+  <div class="cc-badges"><span class="badge badge-nonprofit">Nonprofit</span></div>
+</div>
+
+    </div>
+    <div id="pivotNoResults" style="display:none;text-align:center;padding:40px;color:#64748b;">No results found.</div>
+  </div>
+</div>
+
+<!-- ===== KEY PEOPLE ===== -->
+<div id="tab-keypeople" class="tab-content">
+  <div class="card">
+    <h2>Key Connectors — Priority Outreach List</h2>
+    <p class="section-intro">These are Jordan's highest-leverage connections for the career pivot. Each profile includes why they matter and specific recommended outreach actions. Prioritize these before cold outreach.</p>
+  </div>
+
+<div class="key-card">
+  <div class="kc-header">
+    <div>
+      <div class="kc-name">Marcus Chen</div>
+      <div class="kc-org">World Trade Organization</div>
+      <div class="kc-headline">Senior Legal Advisor, Environmental Goods — World Trade Organization</div>
+    </div>
+    <div><span class="badge badge-intl">International</span><span class="badge badge-env">Environmental & Social</span></div>
+  </div>
+  <div class="kc-why">Senior Legal Advisor covering environmental goods at the WTO. A direct path to international environmental trade law. His role sits exactly at the intersection of Jordan's WIPO background and climate pivot goal.</div>
+  <div class="kc-actions">
+    <h4>Recommended Actions</h4>
+    <ul><li>Reconnect via shared international IP/trade law background</li><li>Ask about WTO's legal hiring pipeline for counsel with environmental credentials</li><li>Request intro to colleagues in environmental standards teams</li></ul>
+  </div>
+</div>
+<div class="key-card">
+  <div class="kc-header">
+    <div>
+      <div class="kc-name">Dr. Amara Osei</div>
+      <div class="kc-org">WIPO</div>
+      <div class="kc-headline">Director, Technology Transfer Division — World Intellectual Property Organization</div>
+    </div>
+    <div><span class="badge badge-intl">International</span></div>
+  </div>
+  <div class="kc-why">Direct former WIPO colleague. Jordan's WIPO work (technology transfer, IP for developing nations) is an underused asset — Dr. Osei can help reintroduce Jordan to WIPO's network and open doors to IP-climate crossover roles within UN bodies.</div>
+  <div class="kc-actions">
+    <h4>Recommended Actions</h4>
+    <ul><li>Reach out about legal openings or consultant opportunities at WIPO</li><li>Ask for connections to WIPO's Green Technology Licensing program</li><li>Discuss how patent expertise could serve WIPO's clean energy technology mandate</li></ul>
+  </div>
+</div>
+<div class="key-card">
+  <div class="kc-header">
+    <div>
+      <div class="kc-name">Rachel Torres</div>
+      <div class="kc-org">Climate Justice Alliance</div>
+      <div class="kc-headline">Supervising Attorney, Environmental Litigation — Climate Justice Alliance</div>
+    </div>
+    <div><span class="badge badge-env">Environmental & Social</span><span class="badge badge-nonprofit">Nonprofit</span></div>
+  </div>
+  <div class="kc-why">Jordan volunteers with the Climate Justice Alliance. Rachel leads environmental litigation there. A warm ask from a fellow volunteer — she can open doors to environmental law roles and peer nonprofits.</div>
+  <div class="kc-actions">
+    <h4>Recommended Actions</h4>
+    <ul><li>Leverage shared volunteer relationship for a candid coffee chat</li><li>Ask which environmental law orgs she recommends for a patent attorney pivoting to this space</li><li>Explore whether CJA has paid or staff attorney roles</li></ul>
+  </div>
+</div>
+<div class="key-card">
+  <div class="kc-header">
+    <div>
+      <div class="kc-name">David Okonkwo</div>
+      <div class="kc-org">DOJ</div>
+      <div class="kc-headline">Environmental Crimes Section Chief — U.S. Department of Justice</div>
+    </div>
+    <div><span class="badge badge-gov">Government/Policy</span><span class="badge badge-env">Environmental & Social</span></div>
+  </div>
+  <div class="kc-why">DOJ Environmental Crimes — he leads enforcement at the intersection of environment and federal criminal law. A warm intro here could unlock DOJ environmental attorney roles and connections to EPA's Office of Enforcement.</div>
+  <div class="kc-actions">
+    <h4>Recommended Actions</h4>
+    <ul><li>Connect about DOJ's environmental law hiring and attorney pipeline</li><li>Ask about the path from IP practice to government environmental law</li><li>Request intro to EPA counsel or other DOJ environmental colleagues</li></ul>
+  </div>
+</div>
+<div class="key-card">
+  <div class="kc-header">
+    <div>
+      <div class="kc-name">Priya Nair</div>
+      <div class="kc-org">EPA</div>
+      <div class="kc-headline">Director, International Climate Policy — US Environmental Protection Agency</div>
+    </div>
+    <div><span class="badge badge-gov">Government/Policy</span><span class="badge badge-climate">Climate & Energy</span></div>
+  </div>
+  <div class="kc-why">EPA International Climate Policy Director. Her international portfolio aligns with Jordan's WIPO/international law background. Pathway to EPA counsel roles and international environmental policy.</div>
+  <div class="kc-actions">
+    <h4>Recommended Actions</h4>
+    <ul><li>Reach out about EPA attorney hiring and international programs</li><li>Ask how patent/tech background applies to EPA's emerging tech issues (clean energy IP, environmental tech)</li><li>Request intro to EPA's Office of General Counsel</li></ul>
+  </div>
+</div>
+<div class="key-card">
+  <div class="kc-header">
+    <div>
+      <div class="kc-name">Sarah Lindberg</div>
+      <div class="kc-org">Clearwater Foundation</div>
+      <div class="kc-headline">VP, Climate Programs — Clearwater Foundation</div>
+    </div>
+    <div><span class="badge badge-climate">Climate & Energy</span><span class="badge badge-nonprofit">Nonprofit</span></div>
+  </div>
+  <div class="kc-why">Clearwater Foundation focuses on climate solutions and clean energy innovation. Sarah leads climate programs — a role that works closely with legal counsel. Climate IP is a natural bridge from Jordan's patent background.</div>
+  <div class="kc-actions">
+    <h4>Recommended Actions</h4>
+    <ul><li>Reach out about legal needs at Clearwater and similar climate foundations</li><li>Offer IP/patent perspective on clean energy technology protection</li><li>Ask for introductions to GCs at climate-focused organizations</li></ul>
+  </div>
+</div>
+<div class="key-card">
+  <div class="kc-header">
+    <div>
+      <div class="kc-name">James Whitaker</div>
+      <div class="kc-org">The Horizon Initiative</div>
+      <div class="kc-headline">Climate Tech Program Director — The Horizon Initiative</div>
+    </div>
+    <div><span class="badge badge-climate">Climate & Energy</span><span class="badge badge-nonprofit">Nonprofit</span></div>
+  </div>
+  <div class="kc-why">The Horizon Initiative focuses on accelerating climate technology deployment. James can connect Jordan to foundation legal needs and grant-making relationships across the climate tech ecosystem.</div>
+  <div class="kc-actions">
+    <h4>Recommended Actions</h4>
+    <ul><li>Message about the initiative's legal structure and outside counsel needs</li><li>Explore if IP protection for climate inventions is something they need legal help with</li><li>Ask for introductions to program officers at other climate foundations</li></ul>
+  </div>
+</div>
+<div class="key-card">
+  <div class="kc-header">
+    <div>
+      <div class="kc-name">Fatima Al-Rashidi</div>
+      <div class="kc-org">UNDP</div>
+      <div class="kc-headline">Green Economy Programme Officer — United Nations Development Programme</div>
+    </div>
+    <div><span class="badge badge-intl">International</span><span class="badge badge-climate">Climate & Energy</span></div>
+  </div>
+  <div class="kc-why">UNDP connection — the UN's flagship development body. Jordan's WIPO experience gives them credibility to pitch for UN legal consultant or attorney roles. UNDP's legal division handles sustainable development and green economy compliance.</div>
+  <div class="kc-actions">
+    <h4>Recommended Actions</h4>
+    <ul><li>Reconnect via shared interest in international development and environmental policy</li><li>Ask about UNDP's legal office and consultant/attorney hiring</li><li>Discuss how patent/technology law overlaps with UNDP's green economy mandate</li></ul>
+  </div>
+</div>
+<div class="key-card">
+  <div class="kc-header">
+    <div>
+      <div class="kc-name">Dr. Kwame Mensah</div>
+      <div class="kc-org">Greenleaf Legal Foundation</div>
+      <div class="kc-headline">Senior Fellow, Environmental Governance — Greenleaf Legal Foundation</div>
+    </div>
+    <div><span class="badge badge-env">Environmental & Social</span><span class="badge badge-intl">International</span></div>
+  </div>
+  <div class="kc-why">Greenleaf Legal Foundation is a leading environmental and development policy research organization. Dr. Mensah works in their Environmental Governance program — a direct match for Jordan's target zone.</div>
+  <div class="kc-actions">
+    <h4>Recommended Actions</h4>
+    <ul><li>Reach out about Greenleaf's legal staffing and visiting fellow programs</li><li>Discuss how IP policy, technology transfer (Jordan's WIPO work) aligns with Greenleaf's agenda</li><li>Ask for connections to Greenleaf's partner organizations needing legal support</li></ul>
+  </div>
+</div>
+<div class="key-card">
+  <div class="kc-header">
+    <div>
+      <div class="kc-name">Elena Vasquez</div>
+      <div class="kc-org">Alliance for Climate Action</div>
+      <div class="kc-headline">Policy Program Director — Alliance for Climate Action</div>
+    </div>
+    <div><span class="badge badge-climate">Climate & Energy</span><span class="badge badge-gov">Government/Policy</span></div>
+  </div>
+  <div class="kc-why">Sits at the exact intersection of climate policy and legal advocacy — the same zone Jordan's WIPO and environmental engineering background covered. A warm conversation can surface legal needs in the climate policy space and open peer connections.</div>
+  <div class="kc-actions">
+    <h4>Recommended Actions</h4>
+    <ul><li>Reach out about legal counsel needs in climate policy advocacy</li><li>Share Jordan's WIPO technology transfer and environmental engineering background as a natural bridge</li><li>Ask for connections to organizations at the technology-climate-law intersection</li></ul>
+  </div>
+</div>
+</div>
+
+<!-- ===== JOB SEARCH INTEL ===== -->
+<div id="tab-jobs" class="tab-content">
+
+  <div class="card">
+    <h2>Mission-Aligned Saved Jobs — Signals of Intent</h2>
+    <p class="section-intro">Jordan's saved jobs reveal a clear pattern: clean energy companies, environmental advocacy orgs, and nonprofits/foundations. These are not casual saves — they represent where they're headed.</p>
+    <div class="jobs-grid">
+
+<div class="job-card">
+  <div class="jc-company">Earthwatch Institute</div>
+  <div class="jc-title">Senior Attorney, Climate and Environmental Programs</div>
+  <div class="jc-why">Environmental advocacy org — exactly Jordan's target. Climate programs focus on sustainable development.</div>
+</div>
+<div class="job-card">
+  <div class="jc-company">Solaris Energy Corp</div>
+  <div class="jc-title">Associate General Counsel</div>
+  <div class="jc-why">Growing clean energy company with large solar portfolio. Senior in-house counsel role.</div>
+</div>
+<div class="job-card">
+  <div class="jc-company">Clearwater Foundation</div>
+  <div class="jc-title">Deputy Director, Legal (IP and Grants)</div>
+  <div class="jc-why">Combines IP expertise with foundation mission. Strong signal of intent toward nonprofit work.</div>
+</div>
+<div class="job-card">
+  <div class="jc-company">Pacific Renewables</div>
+  <div class="jc-title">Senior Counsel, Clean Energy Operations</div>
+  <div class="jc-why">Major renewable energy developer. In-house counsel role in clean energy — bridges patent background.</div>
+</div>
+<div class="job-card">
+  <div class="jc-company">UNDP</div>
+  <div class="jc-title">Legal Officer, Climate and Environment Division</div>
+  <div class="jc-why">International org legal role — leverages WIPO background for climate policy work.</div>
+</div>
+<div class="job-card">
+  <div class="jc-company">Global Climate Fund</div>
+  <div class="jc-title">Associate General Counsel</div>
+  <div class="jc-why">International climate finance body. GC role covering green investment programs — international law crossover.</div>
+</div>
+<div class="job-card">
+  <div class="jc-company">National Wildlife Federation</div>
+  <div class="jc-title">Director &amp; Associate General Counsel</div>
+  <div class="jc-why">Mission-driven org with conservation focus — bridges Jordan's environmental engineering and legal expertise.</div>
+</div>
+<div class="job-card">
+  <div class="jc-company">Greenleaf Legal Foundation</div>
+  <div class="jc-title">Senior Attorney, Environmental Governance</div>
+  <div class="jc-why">Environmental law foundation — dedicated environmental governance legal work. Direct match for pivot.</div>
+</div>
+<div class="job-card">
+  <div class="jc-company">Marshall Foundation</div>
+  <div class="jc-title">General Counsel</div>
+  <div class="jc-why">Foundation GC role — direct path to nonprofit leadership.</div>
+</div>
+<div class="job-card">
+  <div class="jc-company">GreenGrid Power</div>
+  <div class="jc-title">Lead IP Counsel, Clean Energy</div>
+  <div class="jc-why">Clean energy grid technology company — natural fit for patent attorney with renewable energy interest.</div>
+</div>
+<div class="job-card">
+  <div class="jc-company">Meridian Wind Holdings</div>
+  <div class="jc-title">Senior Product Counsel</div>
+  <div class="jc-why">Wind energy developer — product counsel with tech/IP focus.</div>
+</div>
+<div class="job-card">
+  <div class="jc-company">The Horizon Initiative</div>
+  <div class="jc-title">Associate General Counsel</div>
+  <div class="jc-why">Climate tech accelerator nonprofit. GC role bridging technology, climate, and legal.</div>
+</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Application History</h2>
+    <p class="section-intro">12 applications on record. Recent applications show a mix of clean energy (Solaris, Pacific Renewables, GreenGrid), tech in-house, and pivot-relevant roles.</p>
+    <div class="table-container">
+      <table>
+        <thead><tr><th>Date</th><th>Job Title</th><th>Company</th><th>Category</th></tr></thead>
+        <tbody>
+<tr>
+  <td>2/15/26</td>
+  <td><a href="#">Senior Counsel, Clean Energy Operations</a></td>
+  <td>Pacific Renewables</td>
+  <td><span class="badge badge-clean_energy">Clean Energy</span></td>
+</tr>
+<tr>
+  <td>2/10/26</td>
+  <td><a href="#">Associate General Counsel</a></td>
+  <td>Solaris Energy Corp</td>
+  <td><span class="badge badge-clean_energy">Clean Energy</span></td>
+</tr>
+<tr>
+  <td>1/28/26</td>
+  <td><a href="#">Lead IP Counsel, Clean Energy</a></td>
+  <td>GreenGrid Power</td>
+  <td><span class="badge badge-clean_energy">Clean Energy</span></td>
+</tr>
+<tr>
+  <td>1/20/26</td>
+  <td><a href="#">IP and Technology Counsel</a></td>
+  <td>Vertex Manufacturing</td>
+  <td><span class="badge badge-ip_stay">IP Stay</span></td>
+</tr>
+<tr>
+  <td>1/15/26</td>
+  <td><a href="#">Patent Counsel</a></td>
+  <td>Apex Innovation Partners</td>
+  <td><span class="badge badge-ip_stay">IP Stay</span></td>
+</tr>
+<tr>
+  <td>12/18/25</td>
+  <td><a href="#">Senior Patent Attorney</a></td>
+  <td>Langston Marsh LLP</td>
+  <td><span class="badge badge-ip_stay">IP Stay</span></td>
+</tr>
+<tr>
+  <td>12/10/25</td>
+  <td><a href="#">Product Counsel</a></td>
+  <td>Rivian</td>
+  <td><span class="badge badge-tech_inhouse">Tech Inhouse</span></td>
+</tr>
+<tr>
+  <td>11/22/25</td>
+  <td><a href="#">Global Product Counsel</a></td>
+  <td>Dataflow Systems</td>
+  <td><span class="badge badge-tech_inhouse">Tech Inhouse</span></td>
+</tr>
+<tr>
+  <td>11/15/25</td>
+  <td><a href="#">Intellectual Property Counsel</a></td>
+  <td>Prescott &amp; Hayes</td>
+  <td><span class="badge badge-ip_stay">IP Stay</span></td>
+</tr>
+<tr>
+  <td>10/28/25</td>
+  <td><a href="#">Legal Counsel, Sustainability</a></td>
+  <td>TerraCycle</td>
+  <td><span class="badge badge-other">Other</span></td>
+</tr>
+<tr>
+  <td>10/15/25</td>
+  <td><a href="#">Associate General Counsel, Commercial</a></td>
+  <td>NovaTech Energy</td>
+  <td><span class="badge badge-other">Other</span></td>
+</tr>
+<tr>
+  <td>9/20/25</td>
+  <td><a href="#">Product Counsel</a></td>
+  <td>Beacon Analytics</td>
+  <td><span class="badge badge-other">Other</span></td>
+</tr>
+</tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Job Search Strategy Analysis</h2>
+    <div class="charts-row" style="margin-bottom:0;">
+      <div>
+        <h3>Applications by Category</h3>
+        <div class="chart-container" style="height:240px;">
+          <canvas id="appCatChart"></canvas>
+        </div>
+      </div>
+      <div>
+        <h3>Saved Jobs by Category</h3>
+        <div class="chart-container" style="height:240px;">
+          <canvas id="savedCatChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== FULL NETWORK ===== -->
+<div id="tab-allconn" class="tab-content">
+  <div class="card">
+    <h2>Full Network — All Connections</h2>
+    <p class="section-intro">All 312 connections. Use the search to find specific people, companies, or roles.</p>
+    <div class="search-row">
+      <input type="text" class="search-input" id="allSearch" placeholder="Search by name, company, or position..." oninput="filterAllCards()">
+    </div>
+    <div id="allGrid" class="conn-grid"></div>
+    <div id="allNoResults" style="display:none;text-align:center;padding:40px;color:#64748b;">No results found.</div>
+    <div id="allShowMore" style="text-align:center;padding:20px;">
+      <button class="filter-btn" onclick="loadMoreAll()" style="padding:10px 24px;">Load More</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- .main -->
+
+<script>
+// ===== Tab switching =====
+function showTab(id) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  event.target.classList.add('active');
+  if (id === 'allconn' && !window.allLoaded) { renderAll(); window.allLoaded = true; }
+}
+
+// ===== Data =====
+const PIVOT_DATA = [
+  {"name":"Rachel Torres","company":"Climate Justice Alliance","position":"Supervising Attorney, Environmental Litigation","url":"#","connected":"15 Jan 2026","sectors":["env_social","government_policy","nonprofit_found"],"score":10},
+  {"name":"Marcus Chen","company":"World Trade Organization","position":"Senior Legal Advisor, Environmental Goods","url":"#","connected":"10 Nov 2025","sectors":["env_social","intl_dev"],"score":10},
+  {"name":"Dr. Amara Osei","company":"WIPO","position":"Director, Technology Transfer Division","url":"#","connected":"22 Mar 2024","sectors":["intl_dev","nonprofit_found"],"score":10},
+  {"name":"Fatima Al-Rashidi","company":"UNDP","position":"Green Economy Programme Officer","url":"#","connected":"08 Sep 2023","sectors":["climate_energy","intl_dev"],"score":10},
+  {"name":"David Okonkwo","company":"U.S. Department of Justice","position":"Environmental Crimes Section Chief","url":"#","connected":"14 Jun 2019","sectors":["env_social","government_policy"],"score":10},
+  {"name":"Priya Nair","company":"US Environmental Protection Agency (EPA)","position":"Director, International Climate Policy","url":"#","connected":"20 Apr 2020","sectors":["government_policy","climate_energy"],"score":10},
+  {"name":"Sarah Lindberg","company":"Clearwater Foundation","position":"VP, Climate Programs","url":"#","connected":"03 Dec 2025","sectors":["climate_energy","nonprofit_found"],"score":10},
+  {"name":"Dr. Kwame Mensah","company":"Greenleaf Legal Foundation","position":"Senior Fellow, Environmental Governance","url":"#","connected":"17 Aug 2022","sectors":["env_social","intl_dev"],"score":10},
+  {"name":"Elena Vasquez","company":"Alliance for Climate Action","position":"Policy Program Director","url":"#","connected":"28 Oct 2025","sectors":["government_policy","nonprofit_found"],"score":9},
+  {"name":"James Whitaker","company":"The Horizon Initiative","position":"Climate Tech Program Director","url":"#","connected":"05 Feb 2025","sectors":["climate_energy","nonprofit_found"],"score":9},
+  {"name":"Nadia Petrova","company":"International Finance Corporation","position":"Senior Counsel, Climate Finance","url":"#","connected":"12 Jul 2021","sectors":["intl_dev"],"score":9},
+  {"name":"Terrence Banks","company":"U.S. Department of Energy","position":"Deputy General Counsel, Energy Policy","url":"#","connected":"09 Mar 2020","sectors":["government_policy"],"score":9},
+  {"name":"Christine Halverson","company":"U.S. Department of State","position":"Senior Advisor, Climate Diplomacy","url":"#","connected":"18 May 2019","sectors":["government_policy"],"score":9},
+  {"name":"Samuel Adeyemi","company":"World Bank Group","position":"Environment and Social Standards Adviser","url":"#","connected":"25 Jan 2023","sectors":["intl_dev"],"score":9},
+  {"name":"Michelle Dawson","company":"NOAA","position":"Senior Policy Analyst, Ocean and Coastal Management","url":"#","connected":"14 Nov 2020","sectors":["government_policy"],"score":9},
+  {"name":"Adrienne Cole","company":"Greenbridge Alliance","position":"Director of Legal Programs","url":"#","connected":"30 Sep 2024","sectors":["nonprofit_found"],"score":9},
+  {"name":"Omar Hassan","company":"UN Environment Programme","position":"Legal Officer, Environmental Treaties","url":"#","connected":"07 Apr 2022","sectors":["intl_dev","nonprofit_found"],"score":9},
+  {"name":"Lisa Pemberton","company":"Earth Advocates Coalition","position":"Managing Attorney","url":"#","connected":"21 Jun 2024","sectors":["env_social","nonprofit_found"],"score":8},
+  {"name":"Robert Tanaka","company":"Solaris Energy Corp","position":"General Counsel","url":"#","connected":"16 Jan 2026","sectors":["climate_energy"],"score":8},
+  {"name":"Denise Washington","company":"Urban Resilience Institute","position":"Executive Director","url":"#","connected":"08 Dec 2023","sectors":["government_policy","nonprofit_found"],"score":8},
+  {"name":"Kathryn Nguyen","company":"Center for International Environmental Law","position":"Senior Attorney","url":"#","connected":"19 Feb 2024","sectors":["intl_dev","nonprofit_found"],"score":8},
+  {"name":"Raymond Foster","company":"U.S. Department of the Interior","position":"Deputy Solicitor, Land and Water Resources","url":"#","connected":"04 Aug 2019","sectors":["env_social","government_policy"],"score":8},
+  {"name":"Yuki Tanabe","company":"WIPO","position":"Counsellor, Global Challenges and Partnerships","url":"#","connected":"11 May 2023","sectors":["intl_dev"],"score":8},
+  {"name":"Angela Morrison","company":"U.S. Department of Commerce","position":"Senior Counsel, Technology Policy","url":"#","connected":"22 Sep 2020","sectors":["government_policy"],"score":8},
+  {"name":"Daniel Reeves","company":"National Conservation Trust","position":"Vice President, Legal Affairs","url":"#","connected":"17 Jul 2024","sectors":["nonprofit_found"],"score":8},
+  {"name":"Ingrid Solheim","company":"Nordic Development Fund","position":"Senior Advisor, Climate and Environment","url":"#","connected":"28 Mar 2022","sectors":["env_social","intl_dev"],"score":7},
+  {"name":"Jerome Williams","company":"Federal Energy Regulatory Commission","position":"Attorney Advisor","url":"#","connected":"05 Oct 2019","sectors":["government_policy"],"score":7},
+  {"name":"Maria Santos","company":"Clean Air Task Force","position":"Associate General Counsel","url":"#","connected":"12 Nov 2023","sectors":["nonprofit_found"],"score":7},
+  {"name":"Benjamin Cole","company":"Asian Development Bank","position":"Senior Counsel, Environment and Safeguards","url":"#","connected":"20 Jun 2021","sectors":["intl_dev"],"score":7},
+  {"name":"Patricia Lane","company":"Brookings Institution","position":"Fellow, Energy and Climate","url":"#","connected":"14 Sep 2024","sectors":["government_policy","nonprofit_found"],"score":7},
+  {"name":"Diana Kemp","company":"Riverstone Environmental Trust","position":"Staff Attorney","url":"#","connected":"03 Feb 2023","sectors":["env_social"],"score":7},
+  {"name":"George Nakamura","company":"U.S. Department of Energy","position":"Program Manager, Clean Energy Technologies","url":"#","connected":"08 Jan 2020","sectors":["government_policy"],"score":6},
+  {"name":"Vanessa Price","company":"Natural Resources Defense Council","position":"Legal Fellow","url":"#","connected":"25 Apr 2024","sectors":["nonprofit_found"],"score":6},
+  {"name":"Carlos Mendez","company":"Inter-American Development Bank","position":"Environmental Specialist","url":"#","connected":"11 Aug 2022","sectors":["intl_dev"],"score":6},
+  {"name":"Alicia Freeman","company":"Department of Housing and Urban Development","position":"Senior Program Specialist","url":"#","connected":"19 Mar 2019","sectors":["government_policy"],"score":6},
+  {"name":"Stephanie Grant","company":"Oceana","position":"Staff Attorney, U.S. Oceans","url":"#","connected":"06 Dec 2024","sectors":["env_social","nonprofit_found"],"score":6},
+  {"name":"Ronald Baker","company":"Tennessee Department of Environment and Conservation","position":"Deputy Commissioner","url":"#","connected":"22 Jul 2018","sectors":["government_policy"],"score":5},
+  {"name":"Tanya Brooks","company":"Ford Foundation","position":"Program Officer, Natural Resources","url":"#","connected":"15 Oct 2023","sectors":["nonprofit_found"],"score":5},
+  {"name":"Henrik Johansson","company":"Global Green Growth Institute","position":"Legal Advisor","url":"#","connected":"01 Sep 2021","sectors":["intl_dev"],"score":5},
+  {"name":"Carol Whitfield","company":"District of Columbia Department of Energy and Environment","position":"Senior Counsel","url":"#","connected":"18 Nov 2019","sectors":["government_policy"],"score":5},
+  {"name":"Michael Ashford","company":"Center for Biological Diversity","position":"Staff Attorney","url":"#","connected":"27 May 2023","sectors":["env_social"],"score":4},
+  {"name":"Laura Jenkins","company":"Pacific Institute","position":"Director of Operations","url":"#","connected":"09 Aug 2024","sectors":["nonprofit_found"],"score":4}
+];
+
+const ALL_DATA = [
+  // === climate_energy (5) ===
+  {"name":"Robert Tanaka","company":"Solaris Energy Corp","position":"General Counsel","url":"#","connected":"16 Jan 2026","sectors":["climate_energy"],"score":8},
+  {"name":"Sarah Lindberg","company":"Clearwater Foundation","position":"VP, Climate Programs","url":"#","connected":"03 Dec 2025","sectors":["climate_energy","nonprofit_found"],"score":10},
+  {"name":"James Whitaker","company":"The Horizon Initiative","position":"Climate Tech Program Director","url":"#","connected":"05 Feb 2025","sectors":["climate_energy","nonprofit_found"],"score":9},
+  {"name":"Fatima Al-Rashidi","company":"UNDP","position":"Green Economy Programme Officer","url":"#","connected":"08 Sep 2023","sectors":["climate_energy","intl_dev"],"score":10},
+  {"name":"Priya Nair","company":"US Environmental Protection Agency (EPA)","position":"Director, International Climate Policy","url":"#","connected":"20 Apr 2020","sectors":["government_policy","climate_energy"],"score":10},
+  // === env_social (8) ===
+  {"name":"Rachel Torres","company":"Climate Justice Alliance","position":"Supervising Attorney, Environmental Litigation","url":"#","connected":"15 Jan 2026","sectors":["env_social","government_policy","nonprofit_found"],"score":10},
+  {"name":"Marcus Chen","company":"World Trade Organization","position":"Senior Legal Advisor, Environmental Goods","url":"#","connected":"10 Nov 2025","sectors":["env_social","intl_dev"],"score":10},
+  {"name":"Dr. Kwame Mensah","company":"Greenleaf Legal Foundation","position":"Senior Fellow, Environmental Governance","url":"#","connected":"17 Aug 2022","sectors":["env_social","intl_dev"],"score":10},
+  {"name":"David Okonkwo","company":"U.S. Department of Justice","position":"Environmental Crimes Section Chief","url":"#","connected":"14 Jun 2019","sectors":["env_social","government_policy"],"score":10},
+  {"name":"Lisa Pemberton","company":"Earth Advocates Coalition","position":"Managing Attorney","url":"#","connected":"21 Jun 2024","sectors":["env_social","nonprofit_found"],"score":8},
+  {"name":"Raymond Foster","company":"U.S. Department of the Interior","position":"Deputy Solicitor, Land and Water Resources","url":"#","connected":"04 Aug 2019","sectors":["env_social","government_policy"],"score":8},
+  {"name":"Diana Kemp","company":"Riverstone Environmental Trust","position":"Staff Attorney","url":"#","connected":"03 Feb 2023","sectors":["env_social"],"score":7},
+  {"name":"Michael Ashford","company":"Center for Biological Diversity","position":"Staff Attorney","url":"#","connected":"27 May 2023","sectors":["env_social"],"score":4},
+  // === intl_dev (12) ===
+  {"name":"Dr. Amara Osei","company":"WIPO","position":"Director, Technology Transfer Division","url":"#","connected":"22 Mar 2024","sectors":["intl_dev","nonprofit_found"],"score":10},
+  {"name":"Nadia Petrova","company":"International Finance Corporation","position":"Senior Counsel, Climate Finance","url":"#","connected":"12 Jul 2021","sectors":["intl_dev"],"score":9},
+  {"name":"Samuel Adeyemi","company":"World Bank Group","position":"Environment and Social Standards Adviser","url":"#","connected":"25 Jan 2023","sectors":["intl_dev"],"score":9},
+  {"name":"Omar Hassan","company":"UN Environment Programme","position":"Legal Officer, Environmental Treaties","url":"#","connected":"07 Apr 2022","sectors":["intl_dev","nonprofit_found"],"score":9},
+  {"name":"Kathryn Nguyen","company":"Center for International Environmental Law","position":"Senior Attorney","url":"#","connected":"19 Feb 2024","sectors":["intl_dev","nonprofit_found"],"score":8},
+  {"name":"Yuki Tanabe","company":"WIPO","position":"Counsellor, Global Challenges and Partnerships","url":"#","connected":"11 May 2023","sectors":["intl_dev"],"score":8},
+  {"name":"Ingrid Solheim","company":"Nordic Development Fund","position":"Senior Advisor, Climate and Environment","url":"#","connected":"28 Mar 2022","sectors":["env_social","intl_dev"],"score":7},
+  {"name":"Benjamin Cole","company":"Asian Development Bank","position":"Senior Counsel, Environment and Safeguards","url":"#","connected":"20 Jun 2021","sectors":["intl_dev"],"score":7},
+  {"name":"Carlos Mendez","company":"Inter-American Development Bank","position":"Environmental Specialist","url":"#","connected":"11 Aug 2022","sectors":["intl_dev"],"score":6},
+  {"name":"Henrik Johansson","company":"Global Green Growth Institute","position":"Legal Advisor","url":"#","connected":"01 Sep 2021","sectors":["intl_dev"],"score":5},
+  {"name":"Aiko Yamada","company":"Japan International Cooperation Agency","position":"Senior Program Officer, Climate Change","url":"#","connected":"14 Apr 2020","sectors":["intl_dev"],"score":3},
+  {"name":"Pierre Duchamp","company":"Organisation for Economic Co-operation and Development","position":"Policy Analyst, Green Growth","url":"#","connected":"22 Nov 2019","sectors":["intl_dev"],"score":2},
+  // === government_policy (18) ===
+  {"name":"Terrence Banks","company":"U.S. Department of Energy","position":"Deputy General Counsel, Energy Policy","url":"#","connected":"09 Mar 2020","sectors":["government_policy"],"score":9},
+  {"name":"Christine Halverson","company":"U.S. Department of State","position":"Senior Advisor, Climate Diplomacy","url":"#","connected":"18 May 2019","sectors":["government_policy"],"score":9},
+  {"name":"Michelle Dawson","company":"NOAA","position":"Senior Policy Analyst, Ocean and Coastal Management","url":"#","connected":"14 Nov 2020","sectors":["government_policy"],"score":9},
+  {"name":"Elena Vasquez","company":"Alliance for Climate Action","position":"Policy Program Director","url":"#","connected":"28 Oct 2025","sectors":["government_policy","nonprofit_found"],"score":9},
+  {"name":"Angela Morrison","company":"U.S. Department of Commerce","position":"Senior Counsel, Technology Policy","url":"#","connected":"22 Sep 2020","sectors":["government_policy"],"score":8},
+  {"name":"Denise Washington","company":"Urban Resilience Institute","position":"Executive Director","url":"#","connected":"08 Dec 2023","sectors":["government_policy","nonprofit_found"],"score":8},
+  {"name":"Jerome Williams","company":"Federal Energy Regulatory Commission","position":"Attorney Advisor","url":"#","connected":"05 Oct 2019","sectors":["government_policy"],"score":7},
+  {"name":"Patricia Lane","company":"Brookings Institution","position":"Fellow, Energy and Climate","url":"#","connected":"14 Sep 2024","sectors":["government_policy","nonprofit_found"],"score":7},
+  {"name":"George Nakamura","company":"U.S. Department of Energy","position":"Program Manager, Clean Energy Technologies","url":"#","connected":"08 Jan 2020","sectors":["government_policy"],"score":6},
+  {"name":"Alicia Freeman","company":"Department of Housing and Urban Development","position":"Senior Program Specialist","url":"#","connected":"19 Mar 2019","sectors":["government_policy"],"score":6},
+  {"name":"Ronald Baker","company":"Tennessee Department of Environment and Conservation","position":"Deputy Commissioner","url":"#","connected":"22 Jul 2018","sectors":["government_policy"],"score":5},
+  {"name":"Carol Whitfield","company":"District of Columbia Department of Energy and Environment","position":"Senior Counsel","url":"#","connected":"18 Nov 2019","sectors":["government_policy"],"score":5},
+  {"name":"Nathan Rivers","company":"U.S. Department of Transportation","position":"Senior Counsel, Infrastructure Programs","url":"#","connected":"06 Feb 2018","sectors":["government_policy"],"score":3},
+  {"name":"Andrea Simmons","company":"Government Accountability Office","position":"Assistant General Counsel","url":"#","connected":"15 Jun 2017","sectors":["government_policy"],"score":2},
+  {"name":"Walter Hodge","company":"Congressional Research Service","position":"Legislative Attorney","url":"#","connected":"28 Oct 2016","sectors":["government_policy"],"score":2},
+  {"name":"Frances Liu","company":"Federal Trade Commission","position":"Attorney, Bureau of Competition","url":"#","connected":"11 Apr 2018","sectors":["government_policy"],"score":1},
+  {"name":"Keith Donovan","company":"U.S. Patent & Trademark Office","position":"Senior Patent Examiner","url":"#","connected":"03 Sep 2015","sectors":["government_policy"],"score":1},
+  {"name":"Brenda Watkins","company":"Securities and Exchange Commission","position":"Staff Attorney","url":"#","connected":"19 Dec 2016","sectors":["government_policy"],"score":1},
+  // === nonprofit_found (18) ===
+  {"name":"Adrienne Cole","company":"Greenbridge Alliance","position":"Director of Legal Programs","url":"#","connected":"30 Sep 2024","sectors":["nonprofit_found"],"score":9},
+  {"name":"Daniel Reeves","company":"National Conservation Trust","position":"Vice President, Legal Affairs","url":"#","connected":"17 Jul 2024","sectors":["nonprofit_found"],"score":8},
+  {"name":"Maria Santos","company":"Clean Air Task Force","position":"Associate General Counsel","url":"#","connected":"12 Nov 2023","sectors":["nonprofit_found"],"score":7},
+  {"name":"Vanessa Price","company":"Natural Resources Defense Council","position":"Legal Fellow","url":"#","connected":"25 Apr 2024","sectors":["nonprofit_found"],"score":6},
+  {"name":"Stephanie Grant","company":"Oceana","position":"Staff Attorney, U.S. Oceans","url":"#","connected":"06 Dec 2024","sectors":["env_social","nonprofit_found"],"score":6},
+  {"name":"Tanya Brooks","company":"Ford Foundation","position":"Program Officer, Natural Resources","url":"#","connected":"15 Oct 2023","sectors":["nonprofit_found"],"score":5},
+  {"name":"Laura Jenkins","company":"Pacific Institute","position":"Director of Operations","url":"#","connected":"09 Aug 2024","sectors":["nonprofit_found"],"score":4},
+  {"name":"Gregory Harper","company":"American Bar Foundation","position":"Research Fellow","url":"#","connected":"21 May 2022","sectors":["nonprofit_found"],"score":3},
+  {"name":"Monica Fields","company":"Legal Aid Society","position":"Staff Attorney","url":"#","connected":"18 Jan 2019","sectors":["nonprofit_found"],"score":2},
+  {"name":"Sandra Evans","company":"Pro Bono Institute","position":"Program Coordinator","url":"#","connected":"02 Aug 2017","sectors":["nonprofit_found"],"score":2},
+  {"name":"Derek Palmer","company":"National Academy of Sciences","position":"Program Officer, Environmental Studies","url":"#","connected":"11 Nov 2020","sectors":["nonprofit_found"],"score":2},
+  {"name":"Cynthia Ross","company":"Habitat for Humanity","position":"Regional Counsel","url":"#","connected":"24 Mar 2018","sectors":["nonprofit_found"],"score":1},
+  {"name":"Albert Kim","company":"AARP Foundation","position":"Staff Attorney","url":"#","connected":"05 Jun 2016","sectors":["nonprofit_found"],"score":1},
+  {"name":"Barbara Thornton","company":"Red Cross","position":"Associate General Counsel","url":"#","connected":"29 Sep 2015","sectors":["nonprofit_found"],"score":1},
+  {"name":"Janice Crawford","company":"United Way","position":"Director of Programs","url":"#","connected":"13 Feb 2017","sectors":["nonprofit_found"],"score":1},
+  {"name":"Peter Blackwell","company":"Amnesty International","position":"Legal Researcher","url":"#","connected":"07 Jul 2020","sectors":["nonprofit_found"],"score":1},
+  {"name":"Katherine Marsh","company":"Teach for America","position":"Regional Managing Director","url":"#","connected":"16 Oct 2018","sectors":["nonprofit_found"],"score":1},
+  {"name":"Steven Park","company":"Asian Americans Advancing Justice","position":"Staff Attorney","url":"#","connected":"23 Apr 2019","sectors":["nonprofit_found"],"score":1},
+  // === biglaw_firm (10) ===
+  {"name":"Jonathan Pierce","company":"Whitfield & Associates","position":"Partner, Patent Prosecution","url":"#","connected":"15 Jun 2022","sectors":["biglaw_firm"],"score":3},
+  {"name":"Victoria Chang","company":"Whitfield & Associates","position":"Of Counsel, Post-Grant Proceedings","url":"#","connected":"20 Jul 2022","sectors":["biglaw_firm"],"score":3},
+  {"name":"Martin Kessler","company":"Whitfield & Associates","position":"Associate, IP Litigation","url":"#","connected":"08 Aug 2022","sectors":["biglaw_firm"],"score":2},
+  {"name":"Samantha Ortiz","company":"Whitfield & Associates","position":"Associate, Patent Prosecution","url":"#","connected":"03 Sep 2022","sectors":["biglaw_firm"],"score":2},
+  {"name":"Richard Graves","company":"Whitfield & Associates","position":"Partner, Trademark & Brand Protection","url":"#","connected":"12 Oct 2022","sectors":["biglaw_firm"],"score":2},
+  {"name":"Jennifer Walsh","company":"Whitfield & Associates","position":"Senior Associate, Patent Prosecution","url":"#","connected":"28 Nov 2022","sectors":["biglaw_firm"],"score":2},
+  {"name":"Andrew Cooper","company":"Whitfield & Associates","position":"Associate, Trade Secrets","url":"#","connected":"14 Jan 2023","sectors":["biglaw_firm"],"score":1},
+  {"name":"Natalie Kim","company":"Whitfield & Associates","position":"Patent Agent","url":"#","connected":"22 Feb 2023","sectors":["biglaw_firm"],"score":1},
+  {"name":"Thomas Reed","company":"Whitfield & Associates","position":"Partner, IP Transactions","url":"#","connected":"05 Mar 2023","sectors":["biglaw_firm"],"score":1},
+  {"name":"Emily Chen","company":"Whitfield & Associates","position":"Associate, Patent Prosecution","url":"#","connected":"18 Apr 2023","sectors":["biglaw_firm"],"score":1},
+  // === other_ip_law (8) ===
+  {"name":"Paul Harrington","company":"Sterling Knox LLP","position":"Partner, Patent Litigation","url":"#","connected":"10 Jan 2019","sectors":["other_ip_law"],"score":3},
+  {"name":"Nancy Flores","company":"Chambers & Blake","position":"Senior Associate, Patent Prosecution","url":"#","connected":"15 Jul 2018","sectors":["other_ip_law"],"score":3},
+  {"name":"David Wexler","company":"Finley Grant & Associates","position":"Partner, IP Counseling","url":"#","connected":"22 Sep 2020","sectors":["other_ip_law"],"score":2},
+  {"name":"Theresa Lloyd","company":"Bartlett & Young LLP","position":"Associate, Patent Prosecution","url":"#","connected":"08 Mar 2021","sectors":["other_ip_law"],"score":2},
+  {"name":"Robert Shin","company":"Prescott & Hayes","position":"Senior Counsel, Patent Litigation","url":"#","connected":"14 Nov 2019","sectors":["other_ip_law"],"score":2},
+  {"name":"Grace Townsend","company":"McAllister IP Group","position":"Patent Attorney","url":"#","connected":"30 Jun 2020","sectors":["other_ip_law"],"score":1},
+  {"name":"Christopher Dunn","company":"Langston Marsh LLP","position":"Associate, IP Transactions","url":"#","connected":"17 Aug 2021","sectors":["other_ip_law"],"score":1},
+  {"name":"Allison Burke","company":"Hartwell Morgan LLP","position":"Senior Associate, Regulatory","url":"#","connected":"05 May 2017","sectors":["other_ip_law"],"score":1},
+  // === tech_inhouse (4) ===
+  {"name":"Kevin Zhao","company":"Dataflow Systems","position":"Senior IP Counsel","url":"#","connected":"12 Dec 2024","sectors":["tech_inhouse"],"score":3},
+  {"name":"Megan Park","company":"Rivian","position":"Patent Counsel","url":"#","connected":"20 Oct 2025","sectors":["tech_inhouse"],"score":3},
+  {"name":"Ryan Douglas","company":"Apex Innovation Partners","position":"VP of Legal","url":"#","connected":"18 Feb 2024","sectors":["tech_inhouse"],"score":2},
+  {"name":"Amanda Torres","company":"Vertex Manufacturing","position":"IP Counsel","url":"#","connected":"09 Jul 2023","sectors":["tech_inhouse"],"score":2},
+  // === recruiter (2) ===
+  {"name":"Brian Caldwell","company":"Summit Legal Staffing","position":"Senior Recruiter, IP & Patent","url":"#","connected":"27 Mar 2025","sectors":["recruiter"],"score":1},
+  {"name":"Diane Mitchell","company":"Precision Legal Recruiting","position":"Managing Director","url":"#","connected":"14 Aug 2024","sectors":["recruiter"],"score":1}
+];
+
+// ===== Charts =====
+window.addEventListener('DOMContentLoaded', () => {
+  // Sector chart
+  new Chart(document.getElementById('sectorChart'), {
+    type:'doughnut',
+    data:{
+      labels: ["Climate & Clean Energy", "Environmental & Social Law", "International & Development", "Government & Policy", "Nonprofits & Foundations", "Whitfield & Associates", "Other IP / Law Firms", "Tech In-House Counsel", "Recruiters / Staffing"],
+      datasets:[{ data: [5, 8, 12, 18, 18, 10, 8, 4, 2], backgroundColor: ["#16a34a", "#0891b2", "#7c3aed", "#475569", "#d97706", "#1e3a8a", "#64748b", "#0f172a", "#94a3b8"], borderWidth:2, borderColor:'white' }]
+    },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'right', labels:{ font:{ size:11 }, boxWidth:14 } } } }
+  });
+
+  // Pivot group chart
+  new Chart(document.getElementById('pivotChart'), {
+    type:'bar',
+    data:{
+      labels:['WIPO','World Bank/IFC','Gov/Policy','Nonprofits','Climate/Energy','Env & Social','Intl Dev'],
+      datasets:[{ data:[4,5,18,18,5,8,12],
+        backgroundColor:['#7c3aed','#0284c7','#475569','#d97706','#16a34a','#0891b2','#7c3aed'],
+        borderRadius:6
+      }]
+    },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true, grid:{ color:'#f1f5f9' } }, x:{ grid:{ display:false } } } }
+  });
+
+  // App category chart
+  const appCatData = {"ip_stay": 4, "clean_energy": 3, "other": 3, "tech_inhouse": 2};
+  new Chart(document.getElementById('appCatChart'), {
+    type:'pie',
+    data:{
+      labels: Object.keys(appCatData).map(k => k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())),
+      datasets:[{ data:Object.values(appCatData), backgroundColor:['#16a34a','#0891b2','#d97706','#7c3aed','#1e293b','#94a3b8','#cbd5e1'], borderWidth:2, borderColor:'white' }]
+    },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'right', labels:{ font:{ size:11 }, boxWidth:14 } } } }
+  });
+
+  const savedCatData = {"clean_energy": 4, "ip_stay": 2, "tech_inhouse": 2, "nonprofit": 2, "intl": 1, "env_law": 1};
+  new Chart(document.getElementById('savedCatChart'), {
+    type:'pie',
+    data:{
+      labels: Object.keys(savedCatData).map(k => k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())),
+      datasets:[{ data:Object.values(savedCatData), backgroundColor:['#1e293b','#16a34a','#0891b2','#d97706','#7c3aed','#94a3b8','#cbd5e1'], borderWidth:2, borderColor:'white' }]
+    },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'right', labels:{ font:{ size:11 }, boxWidth:14 } } } }
+  });
+});
+
+// ===== Badge/card builders =====
+const BADGE_MAP = {
+  climate_energy: '<span class="badge badge-climate">Climate & Energy</span>',
+  env_social:     '<span class="badge badge-env">Env & Social</span>',
+  intl_dev:       '<span class="badge badge-intl">International</span>',
+  government_policy:'<span class="badge badge-gov">Gov/Policy</span>',
+  nonprofit_found:'<span class="badge badge-nonprofit">Nonprofit</span>',
+  biglaw_firm:    '<span class="badge badge-fishrich">Whitfield & Associates</span>',
+  other_ip_law:   '<span class="badge badge-otherip">IP Law</span>',
+  tech_inhouse:   '<span class="badge badge-tech">Tech In-House</span>',
+  recruiter:      '<span class="badge badge-recruiter">Recruiter</span>',
+};
+
+function makeBadges(sectors) {
+  return sectors.map(s => BADGE_MAP[s] || '').join('');
+}
+
+function makeScoreBadge(s) {
+  const cls = s >= 7 ? 'score-high' : s >= 4 ? 'score-med' : 'score-low';
+  return `<span class="score-badge ${cls}">${s}/10</span>`;
+}
+
+function makeCard(c) {
+  const nameLink = c.url ? `<a href="${c.url}" target="_blank">${esc(c.name)}</a>` : esc(c.name);
+  return `<div class="conn-card" data-sectors="${c.sectors.join(' ')}" data-text="${esc(c.name+' '+c.company+' '+c.position).toLowerCase()}">
+    <div class="cc-top">
+      <div class="cc-name">${nameLink} ${makeScoreBadge(c.score)}</div>
+      <div class="cc-sub">${esc(c.position)}</div>
+      <div class="cc-company">${esc(c.company)}</div>
+    </div>
+    <div class="cc-badges">${makeBadges(c.sectors)}</div>
+  </div>`;
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ===== Pivot filter =====
+let currentFilter = 'all';
+function setPivotFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterPivotCards();
+}
+
+function filterPivotCards() {
+  const q = (document.getElementById('pivotSearch').value || '').toLowerCase();
+  const cards = document.querySelectorAll('#pivotGrid .conn-card');
+  let visible = 0;
+  cards.forEach(card => {
+    const text = card.getAttribute('data-text') || '';
+    const sectors = card.getAttribute('data-sectors') || '';
+    const matchSearch = !q || text.includes(q);
+    let matchFilter = currentFilter === 'all';
+    if (!matchFilter) {
+      const filterMap = { climate:'climate_energy', env:'env_social', intl:'intl_dev', gov:'government_policy', nonprofit:'nonprofit_found' };
+      matchFilter = sectors.includes(filterMap[currentFilter] || currentFilter);
+    }
+    const show = matchSearch && matchFilter;
+    card.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+  document.getElementById('pivotNoResults').style.display = visible === 0 ? '' : 'none';
+}
+
+// ===== All network =====
+let allOffset = 0;
+const PAGE = 100;
+function renderAll() {
+  const grid = document.getElementById('allGrid');
+  grid.innerHTML = '';
+  allOffset = 0;
+  loadMoreAll();
+}
+function filterAllCards() {
+  renderAll();
+}
+function loadMoreAll() {
+  const q = (document.getElementById('allSearch')?.value || '').toLowerCase();
+  const grid = document.getElementById('allGrid');
+  const filtered = q ? ALL_DATA.filter(c => (c.name+' '+c.company+' '+c.position).toLowerCase().includes(q)) : ALL_DATA;
+  const page = filtered.slice(allOffset, allOffset + PAGE);
+  page.forEach(c => { grid.insertAdjacentHTML('beforeend', makeCard(c)); });
+  allOffset += PAGE;
+  document.getElementById('allShowMore').style.display = allOffset >= filtered.length ? 'none' : '';
+  document.getElementById('allNoResults').style.display = (filtered.length === 0) ? '' : 'none';
+}
+</script>
+</body>
+</html>
